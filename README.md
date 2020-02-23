@@ -44,26 +44,28 @@ services:
 * VIDEO_SOURCE_URL - any video stream URL supported by OpenCV. ex.: http://cam1/v.mpeg; rtsp://cam2:554/stream
 
 * EVENT_POST_TARGET - an HTTP POST endpoint whose detected events json contents will be sent asynchronously.
+
   * example: POST http://anotherserver/cam1/event
+
 ```json
 {
-    uuid: 'ABDC-2342-BCCA',
-    cam_id: 'cam1', //as in CAM_ID ENV
-    time: '2020-02-15T15:34:32',
-    type: 'MOVED', //ENTERED, STOPPED, EXITED
-    bbox:{x1:12,x2:3,y1:65,y2:91}, speed{x:-5,y:3},
-    image: 'ABC3378BAAASA1', //JPEG image encoded in BASE64
-    track: {
-        uuid: 'ABDC-2342-BCCA',
-        keypoints: [
-            {ts:'2020-02-15T15:34:01', bbox:{x1:12,x2:23,y1:45,y2:81}, speed{x:-2,y:1}},
-            {ts:'2020-02-15T15:34:01', bbox:{x1:12,x2:3,y1:65,y2:91}, speed{x:-5,y:3}}
+    "uuid": "ABDC-2342-BCCA",
+    "cam_id": "cam1", //as in CAM_ID ENV
+    "time": "2020-02-15T15:34:32",
+    "type": "MOVED", //ENTERED, STOPPED, EXITED
+    "bbox":{"x1":12,"x2":3,"y1":65,"y2":91}, "speed": {"x":-5,"y":3},
+    "image": "ABC3378BAAASA1", //JPEG image encoded in BASE64
+    "track": {
+        "uuid": "ABDC-2342-BCCA",
+        "keypoints": [
+            {"ts":"2020-02-15T15:34:01", "bbox":{"x1":12,"x2":23,"y1":45,"y2":81}, "speed":{"x":-2,"y":1}},
+            {"ts":"2020-02-15T15:34:01", "bbox":{"x1":12,"x2":3,"y1":65,"y2":91}, "speed":{"x":-5,"y":3}}
         ]
     },
-    scene: {
-        width: 800,
-        height: 600,
-        image: 'AAC73621AAACCCDDD' //if enabled in ENV EVENT_SCENE_IMAGE_ENABLE
+    "scene": {
+        "width": 800,
+        "height": 600,
+        "image": "AAC73621AAACCCDDD" //if enabled in ENV EVENT_SCENE_IMAGE_ENABLE
     },
 }
 ```
