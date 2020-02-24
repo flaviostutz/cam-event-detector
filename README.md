@@ -53,13 +53,14 @@ services:
     "cam_id": "cam1", //as in CAM_ID ENV
     "time": "2020-02-15T15:34:32",
     "type": "MOVED", //ENTERED, STOPPED, EXITED
-    "bbox":{"x1":12,"x2":3,"y1":65,"y2":91}, "speed": {"x":-5,"y":3},
-    "image": "ABC3378BAAASA1", //JPEG image encoded in BASE64
-    "track": {
+    "bbox":{"x1":12,"y1":65,"x2":3,"y2":91},
+    "speed": {"x":-5,"y":3},
+    "image": "ABC3378BAAASA1", //JPEG image encoded in BASE64. if enabled in ENV EVENT_OBJECT_IMAGE_ENABLE
+    "tracking": {
         "uuid": "ABDC-2342-BCCA",
         "keypoints": [
-            {"ts":"2020-02-15T15:34:01", "bbox":{"x1":12,"x2":23,"y1":45,"y2":81}, "speed":{"x":-2,"y":1}},
-            {"ts":"2020-02-15T15:34:01", "bbox":{"x1":12,"x2":3,"y1":65,"y2":91}, "speed":{"x":-5,"y":3}}
+            {"ts":"2020-02-15T15:34:01", "bbox":{"x1":12,"y1":45,"x2":23,"y2":81}, "speed":{"x":-2,"y":1}},
+            {"ts":"2020-02-15T15:34:01", "bbox":{"x1":12,"y1":65,"x2":3,"y2":91}, "speed":{"x":-5,"y":3}}
         ]
     },
     "scene": {
@@ -70,4 +71,12 @@ services:
 }
 ```
 
+* EVENT_OBJECT_IMAGE_ENABLE - if 'true', the cropped detected object image will be included in event payload. defaults to 'true'
+
 * EVENT_SCENE_IMAGE_ENABLE - if 'true', the full scene image will be included in event payload. defaults to 'false'
+
+* EVENT_MAX_KEYPOINTS - the max number of keypoints that will be included in event payload. defaults to '-1' (no limit)
+
+## Samples
+
+* You can test this with video samples from http://github.com/flaviostutz/camera-samples
