@@ -80,3 +80,11 @@ services:
 ## Samples
 
 * You can test this with video samples from http://github.com/flaviostutz/camera-samples
+
+* Some live feeds
+  * http://195.252.80.186:9000/mjpg/video.mjpg
+  * http://50.73.9.194/mjpg/video.mjpg
+  * http://83.14.13.226:81/mjpg/1/video.mjpg?camera=1&timestamp=1582556891831
+  * http://209.206.162.229/mjpg/1/video.mjpg?camera=1&timestamp=1582557330589
+  * http://87.57.111.162/mjpg/video.mjpg
+  * http://83.14.13.226:81/mjpg/4/video.mjpg?camera=4&timestamp=1582561415901

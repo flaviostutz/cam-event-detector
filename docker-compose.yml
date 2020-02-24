@@ -6,25 +6,28 @@ services:
     build: .
     image: flaviostutz/cam-event-detector
     ports:
-        - 3000:3000
+      - 3000:3000
     restart: always
     environment:
-        - CAM_ID=cam1
-        - VIDEO_SOURCE_URL=http://195.252.80.186:9000/mjpg/video.mjpg
-        #   - VIDEO_SOURCE_URL=http://50.73.9.194/mjpg/video.mjpg
-        #   - VIDEO_SOURCE_URL=http://83.14.13.226:81/mjpg/1/video.mjpg?camera=1
-        - EVENT_POST_TARGET=http://localhost:8080/cam1/event
-        - EVENT_SCENE_IMAGE_ENABLE=false
+      - CAM_ID=cam1
+      - VIDEO_SOURCE_URL=rtsp://dummy-rtsp-relay:8554/stream
+      - EVENT_POST_TARGET=http://localhost:8080/cam1/event
+      - EVENT_SCENE_IMAGE_ENABLE=false
 
-  rtsp-relay:
+  dummy-rtsp-relay:
     image: flaviostutz/rtsp-relay
     ports: 
-        - 8554:8554
-        - 8000:8000
-        - 8001:8001
+      - 8554:8554
+      - 8000:8000
+      - 8001:8001
     environment:
-        # - SOURCE_URL=http://87.57.111.162/mjpg/video.mjpg
-        - SOURCE_URL=file:///samples/cars1.mp4
+      # - SOURCE_URL=http://87.57.111.162/mjpg/video.mjpg
+      - SOURCE_URL=file:///samples/cars1.mp4
     volumes:
-        - ./samples:/samples
+      - ./samples:/samples
+
+  dummy-event-receiver:
+    image: sverrirab/generic-rest
+    ports:
+      - 5000:5000
 
