@@ -16,6 +16,10 @@ type options struct {
 	eventMaxKeypoints      int
 }
 
+type event struct {
+	uuid string
+}
+
 var opt options
 
 func main() {
@@ -68,11 +72,17 @@ func main() {
 
 	logrus.Infof("====Starting CAM-EVENT-DETECTOR====")
 
-	go runDispatcher()
-
-	err := runDetector()
+	err := initDispatcher()
 	if err != nil {
-		logrus.Errorf("Error starting detector. err=%s", err)
+		logrus.Errorf("Error initializing dispatcher. err=%s", err)
+		os.Exit(1)
+	}
+
+	// go runDispatcher()
+
+	err1 := runDetector()
+	if err1 != nil {
+		logrus.Errorf("Error starting detector. err=%s", err1)
 		os.Exit(1)
 	}
 

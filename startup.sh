@@ -1,6 +1,6 @@
 #!/bin/bash
 
-wfs-tiler \
+cam-event-detector \
   --loglevel="$LOG_LEVEL" \
   --cam-id="$CAM_ID" \
   --video-source-url="$VIDEO_SOURCE_URL" \

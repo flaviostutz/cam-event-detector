@@ -1,10 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
-	"fmt"
+	"encoding/json"
+	"net/http"
 	"os"
-	"time"
 
 	"github.com/chiefnoah/goalpost"
 	"github.com/sirupsen/logrus"
@@ -20,40 +21,64 @@ func (w *worker) ID() string {
 }
 
 func (w *worker) DoWork(ctx context.Context, job *goalpost.Job) error {
-	fmt.Printf("Hello, %s\n", job.Data)
-	if job.RetryCount < 9 { //try 10 times
-		return goalpost.NewRecoverableWorkerError("Something broke, try again")
+	logrus.Debugf("DoWork. jobID=%d. event=%s", job.ID, string(job.Data))
+
+	reader := bytes.NewReader(job.Data)
+	request, err := http.NewRequest("POST", opt.eventPostEndpoint, reader)
+	if err != nil {
+		logrus.Warnf("Could not prepare post to %s. retries=%d. err=%s", opt.eventPostEndpoint, job.RetryCount, err)
+		return goalpost.NewRecoverableWorkerError("Error on prepare HTTP POST")
+	}
+	client := &http.Client{}
+
+	logrus.Debugf("Sending HTTP POST for job %d to %s", job.ID, opt.eventPostEndpoint)
+	resp, err1 := client.Do(request)
+	if err1 != nil {
+		logrus.Infof("Could not post to %s. failures=%d. err=%s", opt.eventPostEndpoint, job.RetryCount, err)
+		return goalpost.NewRecoverableWorkerError("Error on execute HTTP POST")
+	}
+	if resp.StatusCode != http.StatusOK {
+		logrus.Debugf("Server returned an error. statusCode=%d", resp.StatusCode)
+		return goalpost.NewRecoverableWorkerError("Server returned error")
 	}
 
-	//Something *really* broke, don't retry
-	//return errors.New("Something broke, badly")
+	logrus.Debugf("Event sent to target server successfully")
 	return nil
 }
 
-func runDispatcher() {
-	logrus.Infof("Preparing events queue...")
+var wqueue *goalpost.Queue
+
+func initDispatcher() error {
+	logrus.Infof("Initializing dispatcher...")
 
 	//create events queue
 	os.MkdirAll("/data/queue", os.ModePerm)
-	wqueue, err := goalpost.Init("/data/queue")
+	wqueue0, err := goalpost.Init("/data/queue")
 	if err != nil {
-		logrus.Errorf("Error initializing queue engine. err=%s", err)
-		os.Exit(1)
+		return err
 	}
-	defer wqueue.Close()
+	wqueue = wqueue0
 
-	//register worker
+	logrus.Debugf("Registering worker...")
 	w1 := &worker{
 		id: "worker1",
 	}
 	wqueue.RegisterWorker(w1)
 
-	wqueue.PushBytes([]byte("World1"))
-	time.Sleep(5 * time.Second)
-	wqueue.PushBytes([]byte("World2"))
-	time.Sleep(5 * time.Second)
-	wqueue.PushBytes([]byte("World3"))
-	time.Sleep(5 * time.Second)
-	wqueue.PushBytes([]byte("World4"))
-	time.Sleep(5 * time.Second)
+	return nil
+}
+
+// func runDispatcher() {
+// 	for {
+// 		enqueueEvent()
+// 		time.Sleep(5 * time.Second)
+// 	}
+// }
+
+func enqueueEvent(ev event) {
+	eb, err := json.Marshal(ev)
+	if err != nil {
+		logrus.Warnf("Error generating event JSON. err=%s", err)
+	}
+	wqueue.PushBytes(eb)
 }

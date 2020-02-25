@@ -21,6 +21,12 @@ func runDetector() error {
 	for {
 		feed.Read(&img)
 		window.IMShow(img)
-		window.WaitKey(1)
+
+		//testing
+		evt := event{
+			uuid: "test",
+		}
+		enqueueEvent(evt)
 	}
+
 }
