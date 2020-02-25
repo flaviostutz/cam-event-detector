@@ -11,7 +11,7 @@ services:
     environment:
       - CAM_ID=cam1
       - VIDEO_SOURCE_URL=rtsp://dummy-rtsp-relay:8554/stream
-      - EVENT_POST_TARGET=http://localhost:8080/cam1/event
+      - EVENT_POST_TARGET=http://dummy-event-receiver:5000/api
       - EVENT_SCENE_IMAGE_ENABLE=false
 
   dummy-rtsp-relay:

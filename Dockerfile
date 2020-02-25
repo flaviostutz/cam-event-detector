@@ -1,10 +1,9 @@
-FROM golang:1.13.8 AS BUILD
+FROM golang:1.14-rc-alpine3.11 AS BUILD
 
 RUN mkdir /cam-event-detector
 WORKDIR /cam-event-detector
 
 ADD go.mod .
-ADD go.sum .
 RUN go mod download
 
 #now build source code
@@ -15,7 +14,12 @@ RUN go build -o /go/bin/cam-event-detector
 
 FROM czentye/opencv-video-minimal:4.2-py3.7.5
 
+RUN apt-get update && \
+    apt-get install -y ssh openssh-server
+
 EXPOSE 3000
+
+VOLUME [ "/data" ]
 
 ENV CAM_ID ''
 ENV VIDEO_SOURCE_URL ''
