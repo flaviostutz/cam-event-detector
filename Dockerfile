@@ -19,9 +19,8 @@ RUN go mod download
 
 #now build source code
 ADD . ./
-RUN go build -o /go/bin/cam-event-detector
+RUN go build -o /usr/bin/cam-event-detector
 
-ADD /startup.sh /
+ADD startup.sh /
 
-ENTRYPOINT /startup.sh
-
+# CMD [ "/startup.sh" ]

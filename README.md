@@ -77,7 +77,23 @@ services:
 
 * EVENT_MAX_KEYPOINTS - the max number of keypoints that will be included in event payload. defaults to '-1' (no limit)
 
-## Samples
+## Development tips
+
+### Use OpenCV native windows for debugging
+
+* Run the container with default CMD (/startup.sh) - comment your own
+
+* Connect to the container with X export enabled: ```ssh -Y -p 2222 root@localhost```
+
+* ```cd /workspace``` - this is mounted to your desktop workspace, so all modifications in your editor will be present here
+
+* ```go build -o /usr/bin/cam-event-detector && cam-event-detector --cam-id=test1 --video-source-url=rtsp://dummy-rtsp-relay:8554/stream --event-post-endpoint=http://dummy-event-receiver:3000/events```
+
+* Window references used for image debugging will be shown in your host computer (ex.: "window.IMShow(img)")
+
+* The container may be running even on the cloud as the SSH connection will tunnel the X connection
+
+### Samples
 
 * You can test this with video samples from http://github.com/flaviostutz/camera-samples
 

@@ -66,23 +66,21 @@ func main() {
 	}
 
 	if opt.eventPostEndpoint == "" {
-		logrus.Errorf("'--video-post-endpoint' is required")
+		logrus.Errorf("'--event-post-endpoint' is required")
 		os.Exit(1)
 	}
 
 	logrus.Infof("====Starting CAM-EVENT-DETECTOR====")
 
-	err := initDispatcher()
-	if err != nil {
-		logrus.Errorf("Error initializing dispatcher. err=%s", err)
-		os.Exit(1)
-	}
-
-	// go runDispatcher()
+	// err := initDispatcher()
+	// if err != nil {
+	// 	logrus.Errorf("Error initializing dispatcher. err=%s", err)
+	// 	os.Exit(1)
+	// }
 
 	err1 := runDetector()
 	if err1 != nil {
-		logrus.Errorf("Error starting detector. err=%s", err1)
+		logrus.Errorf("Error running detector. err=%s", err1)
 		os.Exit(1)
 	}
 

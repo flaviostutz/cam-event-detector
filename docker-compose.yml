@@ -6,13 +6,15 @@ services:
     build: .
     image: flaviostutz/cam-event-detector
     ports:
-      - 3000:3000
+      - "2222:22"
     restart: always
     environment:
       - CAM_ID=cam1
       - VIDEO_SOURCE_URL=rtsp://dummy-rtsp-relay:8554/stream
-      - EVENT_POST_TARGET=http://dummy-event-receiver:5000/api
+      - EVENT_POST_ENDPOINT=http://dummy-event-receiver:3000/events
       - EVENT_SCENE_IMAGE_ENABLE=false
+    volumes:
+      - ./:/workspace
 
   dummy-rtsp-relay:
     image: flaviostutz/rtsp-relay
@@ -27,7 +29,9 @@ services:
       - ./samples:/samples
 
   dummy-event-receiver:
-    image: sverrirab/generic-rest
+    image: flaviostutz/json-server
     ports:
-      - 5000:5000
-
+      - 3000:3000
+    environment:
+      - COLLECTIONS=events
+      - RESPONSE_DELAY_MS=300

@@ -37,7 +37,7 @@ func (w *worker) DoWork(ctx context.Context, job *goalpost.Job) error {
 		logrus.Infof("Could not post to %s. failures=%d. err=%s", opt.eventPostEndpoint, job.RetryCount, err)
 		return goalpost.NewRecoverableWorkerError("Error on execute HTTP POST")
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusCreated {
 		logrus.Debugf("Server returned an error. statusCode=%d", resp.StatusCode)
 		return goalpost.NewRecoverableWorkerError("Server returned error")
 	}
@@ -67,13 +67,6 @@ func initDispatcher() error {
 
 	return nil
 }
-
-// func runDispatcher() {
-// 	for {
-// 		enqueueEvent()
-// 		time.Sleep(5 * time.Second)
-// 	}
-// }
 
 func enqueueEvent(ev event) {
 	eb, err := json.Marshal(ev)
