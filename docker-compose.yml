@@ -25,6 +25,7 @@ services:
     environment:
       # - SOURCE_URL=http://87.57.111.162/mjpg/video.mjpg
       - SOURCE_URL=file:///samples/cars1.mp4
+      # - FFMPEG_INPUT_ARGS=-vf “setpts=(4)*PTS”
     volumes:
       - ./samples:/samples
 

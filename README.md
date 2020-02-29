@@ -1,6 +1,8 @@
 # cam-event-detector
 
-Camera image event detector for objects entering, moving, stopping or exiting the scene.
+Camera image event detector for objects entering, moving, stopping or exiting the view. 
+
+Specialized on still security camera scenes.
 
 ## What it does
 
@@ -92,6 +94,10 @@ services:
 * Window references used for image debugging will be shown in your host computer (ex.: "window.IMShow(img)")
 
 * The container may be running even on the cloud as the SSH connection will tunnel the X connection
+
+* Performance profiling
+
+  * ```go tool pprof -tree http://localhost:6060/debug/pprof/profile?seconds=5```
 
 ### Samples
 

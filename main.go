@@ -2,7 +2,11 @@ package main
 
 import (
 	"flag"
+	"log"
 	"os"
+
+	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/sirupsen/logrus"
 )
@@ -31,6 +35,17 @@ func main() {
 	eventSceneImageEnable := flag.Bool("event-scene-image-enable", false, "Include full scene image in event payload?")
 	eventMaxKeypoints := flag.Int("event-max-keypoints", -1, "Max number of keypoints in payload. Keypoints may be simplified if too large. defaults to -1 (no limit)")
 	flag.Parse()
+
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
+	// f, err := os.Create("cam.prof")
+	// if err != nil {
+	// 	panic(fmt.Sprintf("Couldn't create profile file. err=%s", err))
+	// }
+	// pprof.StartCPUProfile(f)
+	// defer pprof.StopCPUProfile()
 
 	switch *logLevel {
 	case "debug":

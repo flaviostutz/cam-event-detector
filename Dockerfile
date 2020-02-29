@@ -4,6 +4,13 @@ EXPOSE 3000
 
 VOLUME [ "/data" ]
 
+WORKDIR /tmp
+RUN apk add curl && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python get-pip.py
+
+RUN pip install Pillow torchvision
+
 ENV CAM_ID ''
 ENV VIDEO_SOURCE_URL ''
 ENV EVENT_POST_ENDPOINT ''
