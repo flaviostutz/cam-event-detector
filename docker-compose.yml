@@ -14,7 +14,7 @@ services:
       - EVENT_POST_ENDPOINT=http://dummy-event-receiver:3000/events
       - EVENT_SCENE_IMAGE_ENABLE=false
     volumes:
-      - ./:/workspace
+      - ../:/workspace
 
   dummy-rtsp-relay:
     image: flaviostutz/rtsp-relay

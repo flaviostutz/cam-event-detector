@@ -40,13 +40,6 @@ func main() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	// f, err := os.Create("cam.prof")
-	// if err != nil {
-	// 	panic(fmt.Sprintf("Couldn't create profile file. err=%s", err))
-	// }
-	// pprof.StartCPUProfile(f)
-	// defer pprof.StopCPUProfile()
-
 	switch *logLevel {
 	case "debug":
 		logrus.SetLevel(logrus.DebugLevel)
