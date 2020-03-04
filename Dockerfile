@@ -9,10 +9,9 @@ RUN apk add --no-cache cmake && \
     make config && make install && \
     rm -rf /tmp/*
 
-RUN apk add curl && \
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    python get-pip.py
-RUN pip install Pillow torchvision
+# RUN apk add --no-cache py-pip jpeg-dev python-dev
+# RUN pip install Pillow torchvision
+# RUN pip install torch torchvision -f https://download.pytorch.org/whl/torch_stable.html
 
 EXPOSE 3000
 VOLUME [ "/data" ]
