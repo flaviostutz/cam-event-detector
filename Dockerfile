@@ -1,5 +1,7 @@
 FROM flaviostutz/opencv-golang:1.0.2
 
+RUN apk add --no-cache git
+
 #dependency for lib github.com/flaviostutz/sort
 WORKDIR /tmp
 RUN apk add --no-cache cmake && \

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"time"
 
 	"net/http"
 	_ "net/http/pprof"
@@ -21,7 +22,12 @@ type options struct {
 }
 
 type event struct {
-	uuid string
+	uuid      string
+	eventType string
+	camID     string
+	timestamp time.Time
+	image     []byte
+	level     float64
 }
 
 var opt options

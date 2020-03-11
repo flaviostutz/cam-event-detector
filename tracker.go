@@ -23,12 +23,12 @@ var flow gocv.Mat
 func initTracker() {
 	window = gocv.NewWindow("Tracker")
 	window.ResizeWindow(600, 600)
-	// window2 = gocv.NewWindow("Tracker 2")
-	// window2.ResizeWindow(600, 600)
 	tracking = sort.NewSORT(2, 2, 0.2)
 	logrus.SetLevel(logrus.InfoLevel)
 	// curImg = gocv.NewMat()
 	// prevImg = gocv.NewMat()
+	// window2 = gocv.NewWindow("Tracker 2")
+	// window2.ResizeWindow(600, 600)
 }
 
 func trackFrame(img *gocv.Mat, bboxes [][]float64) {
@@ -42,7 +42,7 @@ func trackFrame(img *gocv.Mat, bboxes [][]float64) {
 
 	// gocv.CvtColor(*img, &curImg, gocv.ColorBGRToGray)
 	// if frameCounter > 0 {
-	// opticalFlowDense(window2, curImg, prevImg)
+	// 	opticalFlowDense(window2, curImg, prevImg)
 	// }
 	// curImg.CopyTo(&prevImg)
 
@@ -72,7 +72,7 @@ func trackFrame(img *gocv.Mat, bboxes [][]float64) {
 	}
 
 	window.IMShow(*img)
-	window.WaitKey(1000000 / 5)
+	window.WaitKey(1000 / 5)
 	fmt.Printf("%d ", frameCounter)
 	frameCounter = frameCounter + 1
 }
