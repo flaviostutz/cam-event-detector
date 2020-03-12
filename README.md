@@ -90,9 +90,9 @@ services:
 
   * Map your local development workspace directory (where you git clone the projects you are working in) to /workspace
 
-* ```go build -o /usr/bin/cam-event-detector && cam-event-detector --cam-id=test1 --video-source-url=rtsp://dummy-rtsp-relay:8554/stream --event-post-endpoint=http://dummy-event-receiver:3000/events```
+* ```go build -o /usr/bin/cam-event-detector && cam-event-detector --cam-id=test1 --video-source-url=rtsp://dummy-rtsp-relay:8554/stream --event-post-endpoint=http://dummy-event-receiver:3000/events --image-post-endpoint=http://dummy-event-receiver:3000/images```
 
-* ```go build -o /usr/bin/cam-event-detector && cam-event-detector --cam-id=test1 --video-source-url=/workspace/cam-event-detector/samples/cars1.mp4 --event-post-endpoint=http://dummy-event-receiver:3000/events```
+* ```go build -o /usr/bin/cam-event-detector && cam-event-detector --cam-id=test1 --video-source-url=/workspace/cam-event-detector/samples/cars1.mp4 --event-post-endpoint=http://dummy-event-receiver:3000/events --image-post-endpoint=http://dummy-event-receiver:3000/images```
 
 * Window references used for image debugging will be shown in your host computer (ex.: "window.IMShow(img)")
 

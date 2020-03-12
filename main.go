@@ -16,18 +16,19 @@ type options struct {
 	camID                  string
 	videoSourceURL         string
 	eventPostEndpoint      string
+	imagePostEndpoint      string
 	eventObjectImageEnable bool
 	eventSceneImageEnable  bool
 	eventMaxKeypoints      int
 }
 
 type event struct {
-	uuid      string
-	eventType string
-	camID     string
-	timestamp time.Time
-	image     []byte
-	level     float64
+	UUID             string    `json:"uuid"`
+	EventType        string    `json:"eventType"`
+	CamID            string    `json:"camId"`
+	Timestamp        time.Time `json:"timestamp,string"`
+	Level            float64   `json:"level"`
+	ImageLocationURL string    `json:"imageLocationURL"`
 }
 
 var opt options
@@ -37,6 +38,7 @@ func main() {
 	camID := flag.String("cam-id", "", "cam id used in event payloads")
 	videoSourceURL := flag.String("video-source-url", "", "video feed url that will be used as source for analysis. Any source supported by OpenCV")
 	eventPostEndpoint := flag.String("event-post-endpoint", "", "Target HTTP endpoint that will receive POST requests with events detected by this detector")
+	imagePostEndpoint := flag.String("image-post-endpoint", "", "Target HTTP endpoint that will receive POST requests with images detected by this detector")
 	eventObjectImageEnable := flag.Bool("event-object-image-enable", true, "Include detected image crop in event payload?")
 	eventSceneImageEnable := flag.Bool("event-scene-image-enable", false, "Include full scene image in event payload?")
 	eventMaxKeypoints := flag.Int("event-max-keypoints", -1, "Max number of keypoints in payload. Keypoints may be simplified if too large. defaults to -1 (no limit)")
@@ -64,6 +66,7 @@ func main() {
 		camID:                  *camID,
 		videoSourceURL:         *videoSourceURL,
 		eventPostEndpoint:      *eventPostEndpoint,
+		imagePostEndpoint:      *imagePostEndpoint,
 		eventObjectImageEnable: *eventObjectImageEnable,
 		eventSceneImageEnable:  *eventSceneImageEnable,
 		eventMaxKeypoints:      *eventMaxKeypoints,
@@ -84,13 +87,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	if opt.imagePostEndpoint == "" {
+		logrus.Errorf("'--image-post-endpoint' is required")
+		os.Exit(1)
+	}
+
 	logrus.Infof("====Starting CAM-EVENT-DETECTOR====")
 
-	// err := initDispatcher()
-	// if err != nil {
-	// 	logrus.Errorf("Error initializing dispatcher. err=%s", err)
-	// 	os.Exit(1)
-	// }
+	err := initDispatcher()
+	if err != nil {
+		logrus.Errorf("Error initializing dispatcher. err=%s", err)
+		os.Exit(1)
+	}
 
 	err1 := runDetector()
 	if err1 != nil {
