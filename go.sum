@@ -10,6 +10,8 @@ github.com/flaviostutz/kalman v1.1.0 h1:+T7vVMSmeUfAoKmfxdaI9LaZwBFYV8O+xf32INAW
 github.com/flaviostutz/kalman v1.1.0/go.mod h1:voOjT/2nMMtCgn2Np0aOK7p+q9+5+qTRnhrGIpcP+nQ=
 github.com/flaviostutz/signalutils v0.0.0-20200311033138-4b050b72ed63 h1:Tiwk6CEow4KJB5tnYBKcMJbYuBsXuDdZW8jXhmqpYs8=
 github.com/flaviostutz/signalutils v0.0.0-20200311033138-4b050b72ed63/go.mod h1:tT0U2iqxlWiWBmiHm5Iel3RTxjmD0Ab4jK0zoN23YpY=
+github.com/flaviostutz/signalutils v1.2.0 h1:Uv5MXcaubOB36TbI2iUxGNTh+HZHZJ2t2+/nTJWXyQk=
+github.com/flaviostutz/signalutils v1.2.0/go.mod h1:tT0U2iqxlWiWBmiHm5Iel3RTxjmD0Ab4jK0zoN23YpY=
 github.com/flaviostutz/sort v0.0.0-20200307103650-6c63bccb15d5 h1:djOHFs45001msbsWwVTuJre9kYN9PPJR6+Uiq2Ln8mM=
 github.com/flaviostutz/sort v0.0.0-20200307103650-6c63bccb15d5/go.mod h1:JphuAcWea0Xv7bUUNeS4G9JifGz7TwLdz8J2WU0wLGY=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=

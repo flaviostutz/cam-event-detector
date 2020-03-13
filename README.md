@@ -94,6 +94,8 @@ services:
 
 * ```go build -o /usr/bin/cam-event-detector && cam-event-detector --cam-id=test1 --video-source-url=/workspace/cam-event-detector/samples/cars1.mp4 --event-post-endpoint=http://dummy-event-receiver:3000/events --image-post-endpoint=http://dummy-event-receiver:3000/images```
 
+* ```go build -o /usr/bin/cam-event-detector && cam-event-detector --cam-id=test1 --video-source-url=http://83.14.13.226:81/mjpg/1/video.mjpg?camera=1 --event-post-endpoint=http://json-server:3000/events --image-post-endpoint=http://simple-file-server:4000/images```
+
 * Window references used for image debugging will be shown in your host computer (ex.: "window.IMShow(img)")
 
 * The container may be running even on the cloud as the SSH connection will tunnel the X connection

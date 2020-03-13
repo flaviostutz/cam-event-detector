@@ -22,13 +22,17 @@ type options struct {
 	eventMaxKeypoints      int
 }
 
-type event struct {
-	UUID             string    `json:"uuid"`
-	EventType        string    `json:"eventType"`
-	CamID            string    `json:"camId"`
-	Timestamp        time.Time `json:"timestamp,string"`
-	Level            float64   `json:"level"`
-	ImageLocationURL string    `json:"imageLocationURL"`
+type eventReport struct {
+	UUID          string     `json:"uuid"`
+	EventType     string     `json:"eventType"`
+	CamID         string     `json:"camId"`
+	Timestamp     time.Time  `json:"timestamp,string"`
+	Level         *float64   `json:"level"`
+	Start         *time.Time `json:"start,string"`
+	Stop          *time.Time `json:"stop,string"`
+	Active        bool       `json:"active,boolean"`
+	ImageLocation *string    `json:"imageUrl"`
+	ImageTime     *time.Time `json:"imageTime"`
 }
 
 var opt options

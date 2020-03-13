@@ -21,6 +21,13 @@ const awarenessLow = "Awareness-LowMovement"
 const movementIdle = "Movement-None"
 const movementDetected = "Movement-Detected"
 
+type stateData struct {
+	level     float64
+	diff      float64
+	imageData *gocv.Mat
+	imageTime time.Time
+}
+
 func runDetector() error {
 	logrus.Infof("Opening video feed...")
 	feed, err := gocv.OpenVideoCapture(opt.videoSourceURL)
@@ -45,12 +52,12 @@ func runDetector() error {
 		return err
 	}
 	diffAverage := signalutils.NewMovingAverageTimeWindow(1*time.Second, 10)
-	awarenessState := signalutils.NewStateTracker("", 2, onAwarenessChanged, 10*time.Second, onAwarenessUnchanged)
+	awarenessState := signalutils.NewStateTracker("", 4, onAwarenessChanged, 10*time.Second, onAwarenessUnchanged)
 
 	//MOVEMENT LEVEL EVENTS
 	// movementAveragerBase := signalutils.NewMovingAverageTimeWindow(30*time.Second, 60)
 	movementAverager := signalutils.NewMovingAverageTimeWindow(10*time.Second, 20)
-	movementState := signalutils.NewStateTracker("", 1, onMovementChanged, 10*time.Second, onMovementUnchanged)
+	movementState := signalutils.NewStateTracker("", 3, onMovementChanged, 10*time.Second, onMovementUnchanged)
 
 	// initTracker()
 
@@ -159,26 +166,33 @@ func runDetector() error {
 		diff := diffAverage.Average()
 		movementLevel := movementAverager.Average()
 		// diff := movementAverager.Average() - movementAveragerBase.Average()
-		if diff > 10.0 {
-			awarenessState.SetTransientStateWithData(awarenessHigh, []interface{}{diff, movementLevel, &img})
-		} else if diff < -10.0 {
-			awarenessState.SetTransientStateWithData(awarenessLow, []interface{}{diff, movementLevel, &img})
+		ci := img.Clone()
+		data := &stateData{
+			level:     movementLevel,
+			diff:      diff,
+			imageData: &ci,
+			imageTime: time.Now(),
+		}
+		if diff > 5000.0 {
+			awarenessState.SetTransientStateWithData(awarenessHigh, diff, data)
+		} else if diff < -5000.0 {
+			awarenessState.SetTransientStateWithData(awarenessLow, diff, data)
 		} else {
-			awarenessState.SetTransientStateWithData(awarenessNormal, []interface{}{diff, movementLevel, &img})
+			awarenessState.SetTransientStateWithData(awarenessNormal, diff, data)
 		}
 
 		if movementLevel > 10 {
-			movementState.SetTransientStateWithData(movementDetected, []interface{}{movementLevel, &img})
+			movementState.SetTransientStateWithData(movementDetected, movementLevel, data)
 		} else {
-			movementState.SetTransientStateWithData(movementIdle, []interface{}{movementLevel, &img})
+			movementState.SetTransientStateWithData(movementIdle, movementLevel, data)
 		}
 
 		status := fmt.Sprintf("  Normal level=%.1f", diff)
 		statusColor := color.RGBA{0, 150, 0, 254}
-		if awarenessState.CurrentState == awarenessHigh {
+		if awarenessState.CurrentState.Name == awarenessHigh {
 			status = fmt.Sprintf("Attention HIGH level=%.1f", diff)
 			statusColor = color.RGBA{254, 0, 0, 254}
-		} else if awarenessState.CurrentState == awarenessLow {
+		} else if awarenessState.CurrentState.Name == awarenessLow {
 			status = fmt.Sprintf("Attention LOW level=%.1f", diff)
 			statusColor = color.RGBA{0, 0, 254, 254}
 		}
@@ -188,6 +202,13 @@ func runDetector() error {
 		gocv.PutText(&img, fmt.Sprintf("%d", int64(u)), image.Point{int(20), int(100)}, gocv.FontHersheyPlain, 1.0, color.RGBA{100, 0, 0, 254}, 1)
 		gocv.PutText(&img, fmt.Sprintf("%d", int64(totalContoursArea)), image.Point{int(20), int(112)}, gocv.FontHersheyPlain, 1.0, color.RGBA{0, 100, 0, 254}, 1)
 		gocv.PutText(&img, fmt.Sprintf("%d", int64(l)), image.Point{int(20), int(124)}, gocv.FontHersheyPlain, 1.0, color.RGBA{0, 0, 100, 254}, 1)
+
+		level := 0
+		if movementState.CurrentState.Data != nil {
+			ed := movementState.CurrentState.Data.(*stateData)
+			level = int(ed.level)
+		}
+		gocv.PutText(&img, fmt.Sprintf("%s %d", movementState.CurrentState.Name, level), image.Point{int(20), int(140)}, gocv.FontHersheyPlain, 1.3, color.RGBA{100, 0, 100, 254}, 1)
 
 		window2.IMShow(img)
 		// logrus.Debugf(status)
@@ -205,64 +226,89 @@ func runDetector() error {
 	return nil
 }
 
-func onAwarenessChanged(newState string, previousState string, data interface{}) {
-	if data == nil {
+func onAwarenessChanged(prevState *signalutils.State, state *signalutils.State) {
+	if state.Data == nil {
 		return
 	}
-	d := data.([]interface{})
-	fmt.Printf("AWARENESS CHANGED: %s %v\n", newState, d)
-	diff := d[0].(float64)
-	img := d[2].(*gocv.Mat)
-	ev, imgBytes := newEvent(newState, diff, *img)
-	enqueueEvent(ev, &imgBytes)
+	// prevData := (prevState.Data).(*eventData)
+	fmt.Printf("AWARENESS CHANGED: prevState=%v\n", prevState.Name)
+	// diff := d[0].(float64)
+	// img := d[2].(*gocv.Mat)
+	if prevState != nil {
+		ev, imgBytes := newEventReport(prevState)
+		enqueueEventReport(ev, &imgBytes)
+	} else {
+		ev, imgBytes := newEventReport(state)
+		enqueueEventReport(ev, &imgBytes)
+	}
 }
-func onAwarenessUnchanged(state string, stateDuration time.Duration, data interface{}) {
-	if data == nil {
+func onAwarenessUnchanged(state *signalutils.State) {
+	if state.Data == nil {
 		return
 	}
-	d := data.([]interface{})
-	fmt.Printf("AWARENESS UNCHANGED: %s %v\n", state, d)
-	diff := d[0].(float64)
-	img := d[2].(*gocv.Mat)
-	ev, imgBytes := newEvent(state, diff, *img)
-	enqueueEvent(ev, &imgBytes)
-}
-
-func onMovementChanged(newState string, previousState string, data interface{}) {
-	if data == nil {
-		return
-	}
-	d := data.([]interface{})
-	fmt.Printf("MOVEMENT CHANGED: %s %v\n", newState, d)
-	level := d[0].(float64)
-	img := d[1].(*gocv.Mat)
-	ev, imgBytes := newEvent(newState, level, *img)
-	enqueueEvent(ev, &imgBytes)
-}
-func onMovementUnchanged(state string, stateDuration time.Duration, data interface{}) {
-	if data == nil {
-		return
-	}
-	d := data.([]interface{})
-	fmt.Printf("MOVEMENT UNCHANGED: %s %v\n", state, d)
-	level := d[0].(float64)
-	img := d[1].(*gocv.Mat)
-	ev, imgBytes := newEvent(state, level, *img)
-	enqueueEvent(ev, &imgBytes)
+	// d := (state.Data).(*eventData)
+	fmt.Printf("AWARENESS UNCHANGED: %s\n", state.Name)
+	// diff := d[0].(float64)
+	// img := d[2].(*gocv.Mat)
+	ev, imgBytes := newEventReport(state)
+	enqueueEventReport(ev, &imgBytes)
 }
 
-func newEvent(state string, level float64, img gocv.Mat) (event, []byte) {
-	imgBytes, err := gocv.IMEncode(gocv.JPEGFileExt, img)
+func onMovementChanged(prevState *signalutils.State, state *signalutils.State) {
+	if state.Data == nil {
+		return
+	}
+	// d := (state.Data).(*eventData)
+	fmt.Printf("MOVEMENT CHANGED: %s\n", state.Name)
+	// level := d[0].(float64)
+	// img := d[1].(*gocv.Mat)
+	ev, imgBytes := newEventReport(state)
+	enqueueEventReport(ev, &imgBytes)
+}
+func onMovementUnchanged(state *signalutils.State) {
+	if state.Data == nil {
+		return
+	}
+	// d := (state.Data).(*eventData)
+	fmt.Printf("MOVEMENT UNCHANGED: %s\n", state.Name)
+	// level := d[0].(float64)
+	// img := d[1].(*gocv.Mat)
+	ev, imgBytes := newEventReport(state)
+	enqueueEventReport(ev, &imgBytes)
+}
+
+func newEventReport(state *signalutils.State) (*eventReport, []byte) {
+	if state.Data == nil {
+		return nil, []byte{}
+	}
+
+	evtData := state.Data.(*stateData)
+	imageData := evtData.imageData
+	imageTime := evtData.imageTime
+	level := state.Level
+	if state.HighestData != nil {
+		highestData := state.HighestData.(*stateData)
+		imageData = highestData.imageData
+		imageTime = highestData.imageTime
+		level = state.HighestLevel
+	}
+
+	imgBytes, err := gocv.IMEncode(gocv.JPEGFileExt, *imageData)
 	if err != nil {
 		logrus.Warn("Error encoding image for event. err=%s", err)
 	}
-	return event{
+	return &eventReport{
 		UUID:      uuid.NewV4().String(),
-		EventType: state,
+		EventType: state.Name,
 		CamID:     opt.camID,
 		Timestamp: time.Now(),
 		Level:     level,
+		Start:     &state.Start,
+		Stop:      state.Stop,
+		Active:    (state.Stop == nil),
+		ImageTime: &imageTime,
 	}, imgBytes
+
 }
 
 // func differentialCollins(imgs []gocv.Mat, imgDelta *gocv.Mat) {

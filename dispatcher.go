@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -23,8 +24,8 @@ func (w *worker) ID() string {
 func (w *worker) DoWork(ctx context.Context, job *goalpost.Job) error {
 	logrus.Debugf("Cloud Upload Worker. jobID=%d", job.ID)
 
-	ej := eventJob{}
-	err := json.Unmarshal(job.Data, &ej)
+	eventJob := eventJob{}
+	err := json.Unmarshal(job.Data, &eventJob)
 	if err != nil {
 		logrus.Warnf("Error unmarshaling job data. Moving job to error queue. err=%s", err)
 		errorQueue.PushBytes(job.Data)
@@ -32,7 +33,14 @@ func (w *worker) DoWork(ctx context.Context, job *goalpost.Job) error {
 	}
 
 	logrus.Debugf(">>>Uploading image data...")
-	reader := bytes.NewReader(ej.image)
+
+	imageBytes, err := base64.StdEncoding.DecodeString(eventJob.ImageBase64)
+	if err != nil {
+		logrus.Warnf("Coudn't decode image event from queue. Ignoring. err=%s", err)
+		errorQueue.PushBytes(job.Data)
+		return nil
+	}
+	reader := bytes.NewReader(imageBytes)
 	request, err := http.NewRequest("POST", opt.imagePostEndpoint, reader)
 	if err != nil {
 		logrus.Warnf("Could not prepare post to %s. retries=%d. err=%s", opt.imagePostEndpoint, job.RetryCount, err)
@@ -44,7 +52,7 @@ func (w *worker) DoWork(ctx context.Context, job *goalpost.Job) error {
 	logrus.Debugf("Sending HTTP POST for job %d to %s", job.ID, opt.imagePostEndpoint)
 	resp, err1 := client.Do(request)
 	if err1 != nil {
-		logrus.Infof("Could not post to %s. failures=%d. err=%s", opt.imagePostEndpoint, job.RetryCount, err)
+		logrus.Infof("Could not post to %s. failures=%d. err=%s", opt.imagePostEndpoint, job.RetryCount, err1)
 		return goalpost.NewRecoverableWorkerError("Error on execute HTTP POST")
 	}
 	if resp.StatusCode != http.StatusCreated {
@@ -57,11 +65,11 @@ func (w *worker) DoWork(ctx context.Context, job *goalpost.Job) error {
 		return goalpost.NewRecoverableWorkerError("Server with no Location header")
 	}
 	imageLocation := imageLocation0[0]
-	logrus.Debugf("Image sent to target server successfully")
+	logrus.Debugf("Image sent to target server successfully. location=%s", imageLocation)
 
 	logrus.Debugf(">>>Uploading event data...")
-	ej.evt.ImageLocationURL = imageLocation
-	eventBytes, err1 := json.Marshal(ej.evt)
+	eventJob.EvtReport.ImageLocation = &imageLocation
+	eventBytes, err1 := json.Marshal(eventJob.EvtReport)
 	if err1 != nil {
 		logrus.Warnf("Error unmarshaling event data. Moving job to error queue. err=%s", err)
 		errorQueue.PushBytes(job.Data)
@@ -79,7 +87,7 @@ func (w *worker) DoWork(ctx context.Context, job *goalpost.Job) error {
 	logrus.Debugf("Sending HTTP POST for job %d to %s", job.ID, opt.eventPostEndpoint)
 	resp, err1 = client.Do(request)
 	if err1 != nil {
-		logrus.Infof("Could not post to %s. failures=%d. err=%s", opt.eventPostEndpoint, job.RetryCount, err)
+		logrus.Infof("Could not post to %s. failures=%d. err=%s", opt.eventPostEndpoint, job.RetryCount, err1)
 		return goalpost.NewRecoverableWorkerError("Error on execute HTTP POST")
 	}
 	if resp.StatusCode != http.StatusCreated {
@@ -122,14 +130,19 @@ func initDispatcher() error {
 }
 
 type eventJob struct {
-	evt   event
-	image []byte
+	EvtReport   eventReport
+	ImageBase64 string
 }
 
-func enqueueEvent(ev event, img *[]byte) {
+func enqueueEventReport(ev *eventReport, imgBytes *[]byte) {
+	if ev == nil {
+		logrus.Debugf("Ignoring enqueued event because it is nil")
+		return
+	}
+	imgString := base64.StdEncoding.EncodeToString(*imgBytes)
 	eventJob := eventJob{
-		evt:   ev,
-		image: *img,
+		EvtReport:   *ev,
+		ImageBase64: imgString,
 	}
 	ej, err := json.Marshal(eventJob)
 	if err != nil {
